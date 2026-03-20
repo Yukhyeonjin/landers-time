@@ -12,13 +12,8 @@ function openApp() {
   if (isAndroid) {
     window.location.href = ANDROID_INTENT;
   } else if (isIOS) {
-    const now = Date.now();
-    window.location.href = "ssglanders://";
-    setTimeout(() => {
-      if (Date.now() - now < 2000) {
-        window.location.href = APP_STORE_URL;
-      }
-    }, 1500);
+    // iOS: App Store 페이지로 바로 이동 (앱 설치 시 자동으로 "열기" 표시)
+    window.location.href = APP_STORE_URL;
   } else {
     window.open(PLAY_STORE_URL, "_blank");
   }
