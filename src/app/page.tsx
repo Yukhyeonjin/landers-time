@@ -1,19 +1,18 @@
-import AdSlot from "@/components/AdSlot";
 import ServerClockWidget from "@/components/ServerClock";
 import TicketBanner from "@/components/TicketBanner";
 import ScheduleTable from "@/components/ScheduleTable";
 import UpcomingGames from "@/components/UpcomingGames";
+import WeatherWidget from "@/components/WeatherWidget";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Home() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-6">
-      {/* SECTION 0: 상단 AdSense */}
-      <div className="mb-6">
-        <AdSlot slotId="XXXXXXXXXX" />
-      </div>
-
       {/* SECTION 1: 히어로 헤더 */}
       <header className="relative mb-10 overflow-hidden rounded-3xl bg-surface px-6 py-12 text-center md:py-16 border border-border">
+        <div className="absolute top-4 right-4 z-10">
+          <ThemeToggle />
+        </div>
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -40,6 +39,14 @@ export default function Home() {
           <span className="mr-2">⏱</span>서버 시각
         </h2>
         <ServerClockWidget />
+      </section>
+
+      {/* SECTION 2.3: 경기장 날씨 */}
+      <section className="mb-10">
+        <h2 className="mb-4 font-display text-2xl text-text">
+          <span className="mr-2">🌤</span>문학경기장 날씨
+        </h2>
+        <WeatherWidget />
       </section>
 
       {/* SECTION 2.5: 나의 멤버십 */}
@@ -169,13 +176,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECTION 6: 하단 AdSense */}
-      <div className="mb-10">
-        {/* ← YYYYYYYYYY 를 하단 광고 Slot ID로 교체 */}
-        <AdSlot slotId="YYYYYYYYYY" />
-      </div>
-
-      {/* SECTION 7: 푸터 */}
+      {/* 푸터 */}
       <footer className="border-t border-border py-8 text-center text-sm text-text-dim">
         <p className="mb-4">
           본 사이트는 SSG 랜더스 공식 사이트가 아닙니다.

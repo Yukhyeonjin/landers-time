@@ -19,6 +19,38 @@
   --font-mono: "Courier New", monospace;
 }
 
+/* Dark mode: override CSS custom properties under html.dark */
+html.dark {
+  --color-bg: #0B0F1E;
+  --color-bg-soft: #0F1729;
+  --color-surface: #111827;
+  --color-surface2: #1C2333;
+  --color-border: #2D3748;
+  --color-border-strong: #4A5568;
+  --color-text: #F0F4FF;
+  --color-text-dim: #8899BB;
+  --color-text-muted: #5A6B8A;
+  --color-landers-red-light: rgba(206, 14, 45, 0.15);
+  --color-landers-gold-light: rgba(240, 192, 64, 0.15);
+}
+
+/* System dark mode preference (when no manual override is set) */
+@media (prefers-color-scheme: dark) {
+  html:not(.light) {
+    --color-bg: #0B0F1E;
+    --color-bg-soft: #0F1729;
+    --color-surface: #111827;
+    --color-surface2: #1C2333;
+    --color-border: #2D3748;
+    --color-border-strong: #4A5568;
+    --color-text: #F0F4FF;
+    --color-text-dim: #8899BB;
+    --color-text-muted: #5A6B8A;
+    --color-landers-red-light: rgba(206, 14, 45, 0.15);
+    --color-landers-gold-light: rgba(240, 192, 64, 0.15);
+  }
+}
+
 body {
   background-color: var(--color-bg-soft);
   color: var(--color-text);
