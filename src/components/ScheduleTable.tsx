@@ -279,7 +279,7 @@ export default function ScheduleTable() {
             {DAY_NAMES.map((name, i) => (
               <div
                 key={name}
-                className={`py-2 text-center text-xs font-medium ${
+                className={`py-2.5 text-center text-sm font-semibold ${
                   i === 0
                     ? "text-landers-red"
                     : i === 6
@@ -307,7 +307,7 @@ export default function ScheduleTable() {
               return (
                 <div
                   key={cell.date}
-                  className={`relative min-h-[5rem] border-b border-r border-border p-1.5 transition-all ${
+                  className={`relative min-h-[5.5rem] sm:min-h-[6rem] border-b border-r border-border p-1.5 sm:p-2 transition-all ${
                     !cell.isCurrentMonth
                       ? "bg-surface2/30"
                       : todayCell
@@ -319,27 +319,27 @@ export default function ScheduleTable() {
                       : ""
                   } ${past ? "opacity-40" : ""}`}
                 >
-                  <div className={`text-xs font-medium ${dayColor}`}>
+                  <div className={`text-sm font-semibold ${dayColor}`}>
                     {cell.day}
                     {holiday && cell.isCurrentMonth && (
-                      <span className="ml-0.5 text-[10px] text-landers-red">
+                      <span className="ml-0.5 text-[10px] text-landers-red font-normal">
                         *
                       </span>
                     )}
                   </div>
                   {game && game.home && (
-                    <div className="mt-1 rounded-md bg-landers-red px-1 py-0.5 text-[10px] leading-tight text-white">
-                      <span className="font-semibold">{game.time}</span>
+                    <div className="mt-1 rounded-md bg-landers-red px-1.5 py-1 text-xs leading-snug text-white">
+                      <span className="font-bold">{game.time}</span>
                       <br />
                       vs {game.opponent}
                     </div>
                   )}
                   {game && !game.home && (
                     <div
-                      className="mt-1 rounded-md px-1 py-0.5 text-[10px] leading-tight text-white"
+                      className="mt-1 rounded-md px-1.5 py-1 text-xs leading-snug text-white"
                       style={{ backgroundColor: teamColor }}
                     >
-                      <span className="font-semibold">{game.time}</span>
+                      <span className="font-bold">{game.time}</span>
                       <br />
                       vs {game.opponent}
                     </div>
@@ -350,7 +350,7 @@ export default function ScheduleTable() {
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-4 border-t border-border px-4 py-2 text-[11px] text-text-dim">
+          <div className="flex flex-wrap gap-4 border-t border-border px-4 py-2.5 text-xs text-text-dim">
             <span className="flex items-center gap-1">
               <span className="inline-block h-2.5 w-2.5 rounded-sm bg-landers-red-light border border-landers-red/20" />
               홈경기
