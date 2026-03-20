@@ -215,13 +215,12 @@ export default function ScheduleTable() {
                 const dayOfWeek = dateObj.getDay();
                 const dayColor = getDayColor(dayOfWeek, game.date);
                 const holidayName = holidays[game.date];
-
                 const teamColor = !game.home ? (TEAM_COLORS[game.opponent] || "#6B7280") : undefined;
 
                 return (
                   <div
                     key={game.date + game.opponent}
-                    className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-xl border p-4 transition-all ${
+                    className={`grid grid-cols-[3.5rem_3.5rem_1fr] sm:grid-cols-[4.5rem_4rem_1fr_auto] items-center gap-x-3 gap-y-0 rounded-xl border p-3 sm:p-4 transition-all ${
                       isToday(game.date)
                         ? "border-landers-gold ring-2 ring-landers-gold/40 bg-landers-gold-light"
                         : "border-border bg-surface"
@@ -230,36 +229,38 @@ export default function ScheduleTable() {
                       borderLeftColor: game.home ? "#CE0E2D" : teamColor,
                     }}
                   >
-                    {/* 모바일: 세로 배치, PC: 가로 배치 */}
-                    <div className="flex items-center gap-3 sm:gap-4 sm:flex-1 sm:justify-center">
-                      <div className="w-[5rem] shrink-0 text-center">
-                        <div className={`font-mono text-sm font-semibold ${dayColor}`}>
-                          {game.date.slice(5)}
-                        </div>
-                        <div className={`text-xs font-medium ${dayColor}`}>
-                          ({game.day})
-                          {holidayName && (
-                            <span className="ml-1 text-[10px] text-landers-red">
-                              {holidayName}
-                            </span>
-                          )}
-                        </div>
+                    {/* 날짜 */}
+                    <div className="text-center">
+                      <div className={`font-mono text-sm font-semibold leading-tight ${dayColor}`}>
+                        {game.date.slice(5)}
                       </div>
-                      <div className="font-mono text-lg font-semibold text-landers-red">
-                        {game.time}
+                      <div className={`text-xs font-medium ${dayColor}`}>
+                        ({game.day})
                       </div>
-                      <div className="flex-1 min-w-0 sm:text-center">
-                        <div>
-                          <span className="font-semibold text-text">
-                            vs {game.opponent}
-                          </span>
-                          <span className={`ml-2 text-xs ${game.home ? "text-landers-red" : "text-blue-500"}`}>
-                            {game.home ? "홈" : "원정"}
-                          </span>
+                      {holidayName && (
+                        <div className="text-[10px] leading-tight text-landers-red mt-0.5">
+                          {holidayName}
                         </div>
-                        <div className="text-xs text-text-dim truncate">
-                          {game.stadium}
-                        </div>
+                      )}
+                    </div>
+
+                    {/* 시간 */}
+                    <div className="font-mono text-base sm:text-lg font-semibold text-landers-red text-center">
+                      {game.time}
+                    </div>
+
+                    {/* 상대팀 + 구장 */}
+                    <div className="min-w-0">
+                      <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <span className="font-semibold text-text text-sm sm:text-base">
+                          vs {game.opponent}
+                        </span>
+                        <span className={`text-[11px] font-medium ${game.home ? "text-landers-red" : "text-blue-500"}`}>
+                          {game.home ? "홈" : "원정"}
+                        </span>
+                      </div>
+                      <div className="text-xs text-text-muted truncate">
+                        {game.stadium}
                       </div>
                     </div>
                   </div>
