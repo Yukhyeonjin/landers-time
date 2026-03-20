@@ -3,11 +3,10 @@
 import { useMemo, useState } from "react";
 import { schedule2026, type Game } from "@/data/schedule2026";
 
-type Membership = "landi" | "batty" | "poori" | "general";
+type Membership = "landi_batty" | "poori" | "general";
 
 const MEMBERSHIPS: { key: Membership; label: string; presaleDays: number }[] = [
-  { key: "landi", label: "랜디", presaleDays: 7 },
-  { key: "batty", label: "배티", presaleDays: 7 },
+  { key: "landi_batty", label: "랜디 · 배티", presaleDays: 7 },
   { key: "poori", label: "푸리", presaleDays: 6 },
   { key: "general", label: "일반", presaleDays: 5 },
 ];
@@ -52,7 +51,7 @@ function daysUntil(dateStr: string): number {
 }
 
 export default function UpcomingGames() {
-  const [membership, setMembership] = useState<Membership>("general");
+  const [membership, setMembership] = useState<Membership>("landi_batty");
 
   const selectedMembership = MEMBERSHIPS.find((m) => m.key === membership)!;
 
