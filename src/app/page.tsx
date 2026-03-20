@@ -1,4 +1,3 @@
-import Image from "next/image";
 import ServerClockWidget from "@/components/ServerClock";
 import TicketBanner from "@/components/TicketBanner";
 import ScheduleTable from "@/components/ScheduleTable";
@@ -22,16 +21,6 @@ export default function Home() {
           }}
         />
         <div className="relative">
-          <div className="animate-fade-in-down mx-auto mb-4 w-24 md:w-32">
-            <Image
-              src="/logo.png"
-              alt="랜더스타임 로고"
-              width={128}
-              height={128}
-              className="w-full h-auto"
-              priority
-            />
-          </div>
           <h1 className="animate-fade-in-down font-display text-5xl md:text-7xl text-landers-red">
             랜더스타임
           </h1>
