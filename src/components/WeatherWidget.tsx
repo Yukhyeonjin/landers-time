@@ -6,6 +6,8 @@ type WeatherData = {
   weather: {
     temp: number;
     feelsLike: number;
+    tempMin: number | null;
+    tempMax: number | null;
     humidity: number;
     windSpeed: number;
     description: string;
@@ -186,6 +188,11 @@ export default function WeatherWidget() {
           </div>
           <div className="mt-1 flex items-center gap-2 text-text-dim text-sm">
             <span>{weather.description}</span>
+            {weather.tempMin !== null && weather.tempMax !== null && (
+              <span className="text-text-muted">
+                · 최저 {weather.tempMin}° / 최고 {weather.tempMax}°
+              </span>
+            )}
           </div>
         </div>
         <span className="text-5xl leading-none" aria-hidden="true">
@@ -240,7 +247,7 @@ export default function WeatherWidget() {
 
       {/* Footer */}
       <p className="mt-4 text-xs text-text-muted">
-        문학경기장 (SSG랜더스필드) · {formatUpdatedAt(updatedAt)} · 10분마다 갱신
+        문학경기장 (SSG랜더스필드) · {formatUpdatedAt(updatedAt)}
       </p>
     </div>
   );

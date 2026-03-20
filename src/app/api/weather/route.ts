@@ -140,11 +140,47 @@ export async function GET() {
     const pty = parseInt(obs["PTY"] ?? "0", 10);
     const feelsLike = calcFeelsLike(temp, windSpeed, humidity);
 
+    // 단기예보에서 최고/최저 기온 조회 (base_time 0200)
+    let tempMin: number | null = null;
+    let tempMax: number | null = null;
+    try {
+      const today = formatDate(getKST());
+      const fcstParams = new URLSearchParams({
+        ServiceKey: weatherKey,
+        numOfRows: "300",
+        pageNo: "1",
+        dataType: "JSON",
+        base_date: today,
+        base_time: "0200",
+        nx: String(NX),
+        ny: String(NY),
+      });
+      const fcstRes = await fetch(
+        `${KMA_BASE}/getVilageFcst?${fcstParams}`,
+        { next: { revalidate: 3600 } }
+      );
+      const fcstText = await fcstRes.text();
+      if (!fcstText.startsWith("<")) {
+        const fcstData = JSON.parse(fcstText);
+        if (fcstData?.response?.header?.resultCode === "00") {
+          const items = fcstData?.response?.body?.items?.item ?? [];
+          for (const item of items) {
+            if (item.category === "TMN") tempMin = Math.round(parseFloat(item.fcstValue));
+            if (item.category === "TMX") tempMax = Math.round(parseFloat(item.fcstValue));
+          }
+        }
+      }
+    } catch {
+      // 최고/최저 실패해도 무시
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = {
       weather: {
         temp,
         feelsLike,
+        tempMin,
+        tempMax,
         humidity,
         windSpeed,
         description: getWeatherDescription(pty),
