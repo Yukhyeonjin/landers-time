@@ -216,43 +216,51 @@ export default function ScheduleTable() {
                 const dayColor = getDayColor(dayOfWeek, game.date);
                 const holidayName = holidays[game.date];
 
+                const teamColor = !game.home ? (TEAM_COLORS[game.opponent] || "#6B7280") : undefined;
+
                 return (
                   <div
                     key={game.date + game.opponent}
-                    className={`flex items-center gap-4 rounded-xl border p-4 transition-all ${
+                    className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-xl border p-4 transition-all ${
                       isToday(game.date)
                         ? "border-landers-gold ring-2 ring-landers-gold/40 bg-landers-gold-light"
                         : "border-border bg-surface"
-                    } ${isPast(game.date) ? "opacity-40" : ""} ${
-                      game.home ? "border-l-4 border-l-landers-red" : "border-l-4 border-l-blue-400"
-                    }`}
+                    } ${isPast(game.date) ? "opacity-40" : ""} border-l-4`}
+                    style={{
+                      borderLeftColor: game.home ? "#CE0E2D" : teamColor,
+                    }}
                   >
-                    <div className="w-[5rem] shrink-0 text-center">
-                      <div className={`font-mono text-sm font-semibold ${dayColor}`}>
-                        {game.date.slice(5)}
+                    {/* 모바일: 세로 배치, PC: 가로 배치 */}
+                    <div className="flex items-center gap-3 sm:gap-4 sm:flex-1 sm:justify-center">
+                      <div className="w-[5rem] shrink-0 text-center">
+                        <div className={`font-mono text-sm font-semibold ${dayColor}`}>
+                          {game.date.slice(5)}
+                        </div>
+                        <div className={`text-xs font-medium ${dayColor}`}>
+                          ({game.day})
+                          {holidayName && (
+                            <span className="ml-1 text-[10px] text-landers-red">
+                              {holidayName}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className={`text-xs font-medium ${dayColor}`}>
-                        ({game.day})
-                        {holidayName && (
-                          <span className="ml-1 text-[10px] text-landers-red">
-                            {holidayName}
+                      <div className="font-mono text-lg font-semibold text-landers-red">
+                        {game.time}
+                      </div>
+                      <div className="flex-1 min-w-0 sm:text-center">
+                        <div>
+                          <span className="font-semibold text-text">
+                            vs {game.opponent}
                           </span>
-                        )}
+                          <span className={`ml-2 text-xs ${game.home ? "text-landers-red" : "text-blue-500"}`}>
+                            {game.home ? "홈" : "원정"}
+                          </span>
+                        </div>
+                        <div className="text-xs text-text-dim truncate">
+                          {game.stadium}
+                        </div>
                       </div>
-                    </div>
-                    <div className="font-mono text-lg font-semibold text-landers-red">
-                      {game.time}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-semibold text-text">
-                        vs {game.opponent}
-                      </span>
-                      <span className={`ml-2 text-xs ${game.home ? "text-landers-red" : "text-blue-500"}`}>
-                        {game.home ? "홈" : "원정"}
-                      </span>
-                      <span className="ml-2 text-xs text-text-dim truncate">
-                        {game.stadium}
-                      </span>
                     </div>
                   </div>
                 );
