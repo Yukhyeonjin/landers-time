@@ -177,8 +177,14 @@ export default function WeatherWidget() {
   const pty = weather.icon.startsWith("10") ? 1 : weather.icon.startsWith("13") ? 3 : 0;
   const outfit = getOutfitRecommendation(weather.temp, pty);
 
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일 ${"일월화수목금토"[today.getDay()]}요일`;
+
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
+      {/* Date */}
+      <p className="mb-3 text-sm text-text-dim">{todayStr}</p>
+
       {/* Top row: temp + emoji */}
       <div className="flex items-start justify-between">
         <div>
