@@ -2,6 +2,8 @@ import ServerClockWidget from "@/components/ServerClock";
 import TicketBanner from "@/components/TicketBanner";
 import ScheduleTable from "@/components/ScheduleTable";
 import UpcomingGames from "@/components/UpcomingGames";
+import TicketInfo from "@/components/TicketInfo";
+import MyBookings from "@/components/MyBookings";
 import WeatherWidget from "@/components/WeatherWidget";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -57,9 +59,10 @@ export default function Home() {
 
       {/* SECTION 2.5: 나의 멤버십 */}
       <section className="mb-10">
-        <h2 className="mb-4 font-display text-2xl text-text">
+        <h2 className="mb-1 font-display text-2xl text-text">
           <span className="mr-2">🎟</span>나의 멤버십
         </h2>
+        <p className="mb-4 text-xs text-text-muted">멤버십 선예매는 현재 앱에서만 가능합니다</p>
         <UpcomingGames />
       </section>
 
@@ -76,6 +79,7 @@ export default function Home() {
         <h2 className="mb-4 font-display text-2xl text-text">
           <span className="mr-2">📅</span>2026 경기 일정
         </h2>
+        <MyBookings />
         <ScheduleTable />
       </section>
 
@@ -85,67 +89,10 @@ export default function Home() {
           <span className="mr-2">📋</span>예매 안내
         </h2>
 
-        {/* 공식 예매 링크 */}
-        <div className="mb-6 rounded-2xl border border-border bg-surface p-6">
-          <p className="text-sm text-text-dim">공식 티켓 예매</p>
-          <a
-            href="https://ticket.ssg.com/ticket"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 block text-lg font-semibold text-landers-red hover:underline"
-          >
-            ticket.ssg.com/ticket
-          </a>
-          <p className="mt-1 text-sm text-text-dim">
-            문의 전화: 1577-3419
-          </p>
-        </div>
-
-        {/* 멤버십 등급별 선예매 안내 */}
-        <div className="mb-6 overflow-hidden rounded-2xl border border-border bg-surface">
-          <div className="border-b border-border px-6 py-3 bg-surface2">
-            <h3 className="font-semibold text-text">멤버십 등급별 선예매 안내</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-text-dim">
-                  <th className="px-6 py-3 text-left font-medium">등급</th>
-                  <th className="px-6 py-3 text-left font-medium">가격</th>
-                  <th className="px-6 py-3 text-left font-medium">선예매</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["시즌권", "좌석별 상이", ""],
-                  ["랜디", "199,000원", "경기 7일 전 11:00"],
-                  ["배티", "99,000원", "경기 7일 전 11:00"],
-                  ["푸리", "50,000원", "경기 6일 전 11:00"],
-                  ["일반", "무료", "일반 예매와 동일"],
-                ].map(([grade, price, open]) => (
-                  <tr
-                    key={grade}
-                    className="border-b border-border last:border-0"
-                  >
-                    <td className="px-6 py-3 font-semibold text-text">{grade}</td>
-                    <td className="px-6 py-3 text-text-dim">{price}</td>
-                    <td className="px-6 py-3 text-text-dim">{open}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="px-6 py-3 text-xs text-text-muted border-t border-border bg-surface2">
-            ※ 랜디·배티 등급은 3월 말까지만 한정 판매 (이후 가입 불가)
-            <br />
-            ※ 유료 멤버십 공통: 일반 입장 1시간 전 선입장 + 예매 수수료 면제
-            <br />
-            ※ 정확한 일정은 구단 공식 공지 확인 필수
-          </div>
-        </div>
+        <TicketInfo />
 
         {/* 꿀팁 카드 */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 mt-10">
           {[
             {
               icon: "⏱",

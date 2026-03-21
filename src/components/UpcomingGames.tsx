@@ -1,7 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { schedule2026, type Game } from "@/data/schedule2026";
+
+const APP_STORE_URL = "https://apps.apple.com/kr/app/ssg-landers/id972556231";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.skt.ilbs.skwyverns.app&hl=ko";
+const ANDROID_INTENT = "intent://main#Intent;scheme=ssglanders;package=com.skt.ilbs.skwyverns.app;S.browser_fallback_url=" + encodeURIComponent(PLAY_STORE_URL) + ";end";
 
 type Membership = "landi_batty" | "poori" | "general";
 
@@ -50,8 +54,33 @@ function daysUntil(dateStr: string): number {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
+function openApp() {
+  const ua = navigator.userAgent;
+  const isAndroid = /android/i.test(ua);
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+
+  if (isAndroid) {
+    window.location.href = ANDROID_INTENT;
+  } else if (isIOS) {
+    window.location.href = APP_STORE_URL;
+  } else {
+    window.open(PLAY_STORE_URL, "_blank");
+  }
+}
+
 export default function UpcomingGames() {
   const [membership, setMembership] = useState<Membership>("landi_batty");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("membership");
+    if (saved === "landi_batty" || saved === "poori" || saved === "general") setMembership(saved);
+  }, []);
+
+  const handleMembership = (key: Membership) => {
+    setMembership(key);
+    localStorage.setItem("membership", key);
+    window.dispatchEvent(new Event("membership-changed"));
+  };
 
   const selectedMembership = MEMBERSHIPS.find((m) => m.key === membership)!;
 
@@ -70,7 +99,7 @@ export default function UpcomingGames() {
         {MEMBERSHIPS.map((m) => (
           <button
             key={m.key}
-            onClick={() => setMembership(m.key)}
+            onClick={() => handleMembership(m.key)}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
               membership === m.key
                 ? "bg-landers-red text-white shadow-md shadow-landers-red/25"
@@ -156,15 +185,33 @@ export default function UpcomingGames() {
                     {presaleOpen ? "선예매 오픈됨" : `선예매 ${presaleDate}`}
                   </div>
 
-                  {/* 예매 버튼 */}
-                  <a
-                    href="https://ticket.ssg.com/ticket"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 block rounded-xl bg-landers-red py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-landers-gold hover:text-text"
-                  >
-                    예매하기 →
-                  </a>
+                  {/* 예매 버튼 — 선예매 오픈 전 비활성화 */}
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={openApp}
+                      disabled={!presaleOpen}
+                      className={`flex-1 rounded-xl py-2.5 text-center text-sm font-semibold transition-colors ${
+                        presaleOpen
+                          ? "bg-landers-red text-white hover:bg-landers-gold hover:text-text cursor-pointer"
+                          : "bg-border text-text-muted cursor-not-allowed"
+                      }`}
+                    >
+                      예매(app)
+                    </button>
+                    <a
+                      href={presaleOpen ? "https://ticket.ssg.com/ticket" : undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => { if (!presaleOpen) e.preventDefault(); }}
+                      className={`flex-1 rounded-xl py-2.5 text-center text-sm font-semibold transition-colors ${
+                        presaleOpen
+                          ? "bg-surface2 text-text border border-border hover:bg-landers-red hover:text-white hover:border-landers-red cursor-pointer"
+                          : "bg-border text-text-muted cursor-not-allowed"
+                      }`}
+                    >
+                      예매(web)
+                    </a>
+                  </div>
                 </div>
               </div>
             );

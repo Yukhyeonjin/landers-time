@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { schedule2026, type Game } from "@/data/schedule2026";
 
 const MONTHS = [3, 4, 5, 6, 7, 8, 9];
@@ -47,6 +47,25 @@ export default function ScheduleTable() {
   const [view, setView] = useState<"list" | "calendar">("list");
   const [locationFilter, setLocationFilter] = useState<LocationFilter>("all");
   const [holidays, setHolidays] = useState<Record<string, string>>(HOLIDAYS_FALLBACK);
+  const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+
+  const toggleBookmark = useCallback((dateKey: string) => {
+    setBookmarks((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateKey)) next.delete(dateKey);
+      else next.add(dateKey);
+      localStorage.setItem("bookmarkedGames", JSON.stringify([...next]));
+      window.dispatchEvent(new Event("bookmarks-changed"));
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("bookmarkedGames") || "[]");
+      setBookmarks(new Set(saved));
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     fetch(`/api/holidays?solYear=2026`)
@@ -263,6 +282,19 @@ export default function ScheduleTable() {
                         {game.stadium}
                       </div>
                     </div>
+
+                    {/* 찜 버튼 */}
+                    {game.home && !isPast(game.date) && (
+                      <button
+                        onClick={() => toggleBookmark(game.date)}
+                        className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full transition-colors hover:bg-surface2"
+                        title={bookmarks.has(game.date) ? "찜 해제" : "찜하기"}
+                      >
+                        <span className={`text-lg ${bookmarks.has(game.date) ? "text-landers-gold" : "text-text-muted"}`}>
+                          {bookmarks.has(game.date) ? "★" : "☆"}
+                        </span>
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -319,18 +351,26 @@ export default function ScheduleTable() {
                       : ""
                   } ${past ? "opacity-40" : ""}`}
                 >
-                  <div className={`text-sm font-semibold ${dayColor}`}>
-                    {cell.day}
-                    {holiday && cell.isCurrentMonth && (
-                      <span className="ml-0.5 text-[10px] text-landers-red font-normal">
-                        *
-                      </span>
+                  <div className={`flex items-center justify-between text-sm font-semibold ${dayColor}`}>
+                    <span>
+                      {cell.day}
+                      {holiday && cell.isCurrentMonth && (
+                        <span className="ml-0.5 text-[10px] text-landers-red font-normal">
+                          *
+                        </span>
+                      )}
+                    </span>
+                    {bookmarks.has(cell.date) && cell.isCurrentMonth && (
+                      <span className="text-[11px] text-landers-gold leading-none">★</span>
                     )}
                   </div>
                   {game && game.home && (
-                    <div className="mt-1 rounded-md bg-landers-red px-1.5 py-1 text-xs leading-snug text-white">
-                      <span className="font-bold">{game.time}</span>
-                      <br />
+                    <div
+                      className="mt-1 rounded-md bg-landers-red px-1.5 py-1 text-xs leading-snug text-white cursor-pointer"
+                      onClick={() => !isPast(cell.date) && toggleBookmark(cell.date)}
+                    >
+                      <span className="hidden sm:inline font-bold">{game.time}</span>
+                      <br className="hidden sm:block" />
                       vs {game.opponent}
                     </div>
                   )}
@@ -339,8 +379,8 @@ export default function ScheduleTable() {
                       className="mt-1 rounded-md px-1.5 py-1 text-xs leading-snug text-white"
                       style={{ backgroundColor: teamColor }}
                     >
-                      <span className="font-bold">{game.time}</span>
-                      <br />
+                      <span className="hidden sm:inline font-bold">{game.time}</span>
+                      <br className="hidden sm:block" />
                       vs {game.opponent}
                     </div>
                   )}
