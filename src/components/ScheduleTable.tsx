@@ -55,7 +55,7 @@ export default function ScheduleTable() {
       if (next.has(dateKey)) next.delete(dateKey);
       else next.add(dateKey);
       localStorage.setItem("bookmarkedGames", JSON.stringify([...next]));
-      window.dispatchEvent(new Event("bookmarks-changed"));
+      queueMicrotask(() => window.dispatchEvent(new Event("bookmarks-changed")));
       return next;
     });
   }, []);
@@ -239,7 +239,7 @@ export default function ScheduleTable() {
                 return (
                   <div
                     key={game.date + game.opponent}
-                    className={`grid grid-cols-[3.5rem_3.5rem_1fr] sm:grid-cols-[4.5rem_4rem_1fr_auto] items-center gap-x-3 gap-y-0 rounded-xl border p-3 sm:p-4 transition-all ${
+                    className={`grid grid-cols-[3.5rem_3.5rem_1fr_auto] sm:grid-cols-[4.5rem_4rem_1fr_auto] items-center gap-x-3 gap-y-0 rounded-xl border p-3 sm:p-4 transition-all ${
                       isToday(game.date)
                         ? "border-landers-gold ring-2 ring-landers-gold/40 bg-landers-gold-light"
                         : "border-border bg-surface"
@@ -287,7 +287,7 @@ export default function ScheduleTable() {
                     {game.home && !isPast(game.date) && (
                       <button
                         onClick={() => toggleBookmark(game.date)}
-                        className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full transition-colors hover:bg-surface2"
+                        className="flex items-center justify-center w-8 h-8 rounded-full transition-colors hover:bg-surface2"
                         title={bookmarks.has(game.date) ? "찜 해제" : "찜하기"}
                       >
                         <span className={`text-lg ${bookmarks.has(game.date) ? "text-landers-gold" : "text-text-muted"}`}>
