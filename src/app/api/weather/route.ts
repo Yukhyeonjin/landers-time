@@ -140,11 +140,14 @@ export async function GET() {
     const pty = parseInt(obs["PTY"] ?? "0", 10);
     const feelsLike = calcFeelsLike(temp, windSpeed, humidity);
 
-    // 단기예보에서 최고/최저 기온 조회 (base_time 0200)
+    // 단기예보에서 최고/최저 기온 + 강수확률 조회 (base_time 0200)
     let tempMin: number | null = null;
     let tempMax: number | null = null;
+    let rainChance: number | null = null;
     try {
-      const today = formatDate(getKST());
+      const kstNow = getKST();
+      const today = formatDate(kstNow);
+      const currentHour = String(kstNow.getHours()).padStart(2, "0") + "00";
       const fcstParams = new URLSearchParams({
         ServiceKey: weatherKey,
         numOfRows: "300",
@@ -164,10 +167,20 @@ export async function GET() {
         const fcstData = JSON.parse(fcstText);
         if (fcstData?.response?.header?.resultCode === "00") {
           const items = fcstData?.response?.body?.items?.item ?? [];
+          let closestPop: { time: string; value: number } | null = null;
           for (const item of items) {
             if (item.category === "TMN") tempMin = Math.round(parseFloat(item.fcstValue));
             if (item.category === "TMX") tempMax = Math.round(parseFloat(item.fcstValue));
+            if (item.category === "POP" && item.fcstDate === today) {
+              const val = parseInt(item.fcstValue, 10);
+              if (!closestPop || item.fcstTime >= currentHour) {
+                if (!closestPop || item.fcstTime <= (closestPop.time > currentHour ? closestPop.time : "9999")) {
+                  closestPop = { time: item.fcstTime, value: val };
+                }
+              }
+            }
           }
+          if (closestPop) rainChance = closestPop.value;
         }
       }
     } catch {
@@ -181,7 +194,7 @@ export async function GET() {
         feelsLike,
         tempMin,
         tempMax,
-        humidity,
+        rainChance,
         windSpeed,
         description: getWeatherDescription(pty),
         icon: getWeatherIcon(pty),

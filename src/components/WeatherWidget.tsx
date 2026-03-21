@@ -8,7 +8,7 @@ type WeatherData = {
     feelsLike: number;
     tempMin: number | null;
     tempMax: number | null;
-    humidity: number;
+    rainChance: number | null;
     windSpeed: number;
     description: string;
     icon: string;
@@ -42,13 +42,13 @@ function getOutfitRecommendation(temp: number, pty: number): { emoji: string; te
   if (pty === 1 || pty === 5) {
     return {
       emoji: "🧥☂️",
-      text: "우비 필수! 야구장에선 우산보다 우비가 편해요. 방수 자켓 + 랜더스 우비 조합 추천",
+      text: "우비 필수! 야구장에선 우산보다 우비가 편해요. 방수 자켓 + 우비 조합 추천. 운동화 대신 방수 신발 고려",
     };
   }
   if (pty === 3 || pty === 7) {
     return {
       emoji: "🧣🧤",
-      text: "눈 오는 경기! 롱패딩 + 핫팩 + 랜더스 머플러 필수. 방수 부츠도 챙기세요",
+      text: "눈 오는 경기! 롱패딩 + 핫팩 + 머플러 필수. 방수 부츠 추천, 담요도 챙기세요",
     };
   }
   if (pty === 2 || pty === 6) {
@@ -58,52 +58,52 @@ function getOutfitRecommendation(temp: number, pty: number): { emoji: string; te
     };
   }
 
-  // 기온별 복장
+  // 기온별 복장 (레이어드 중심)
   if (temp < 0) {
     return {
       emoji: "🥶🧣",
-      text: "극한 추위! 롱패딩 + 두꺼운 담요 + 핫팩 여러 개 필수. 랜더스 패딩 머플러 풀세트 추천",
+      text: "극한 추위! 내복 + 니트 + 롱패딩 풀세트. 담요·핫팩·목도리·장갑·귀도리 필수",
     };
   }
   if (temp < 5) {
     return {
       emoji: "🫠🧤",
-      text: "매우 추워요! 롱패딩 + 무릎담요 + 핫팩은 기본. 랜더스 후드 + 머플러 챙기세요",
+      text: "가을야구 한파! 내복 위에 유니폼 + 두꺼운 패딩. 무릎담요·핫팩·장갑은 기본",
     };
   }
   if (temp < 10) {
     return {
       emoji: "🧥✊",
-      text: "쌀쌀해요! 두꺼운 겉옷 + 랜더스 후드집업 + 무릎담요 추천. 핫팩도 하나 챙겨가세요",
+      text: "쌀쌀해요! 유니폼 안에 후드티, 위에 바람막이 겹쳐입기. 무릎담요·핫팩 추천",
     };
   }
   if (temp < 15) {
     return {
       emoji: "🧢👕",
-      text: "선선해요! 가벼운 자켓 안에 랜더스 유니폼, 저녁엔 기온 뚝 떨어지니 겉옷 필수",
+      text: "일교차 주의! 유니폼 + 가디건 or 야구점퍼 레이어드. 저녁엔 기온 뚝 떨어지니 겉옷 필수",
     };
   }
   if (temp < 20) {
     return {
       emoji: "⚾👕",
-      text: "야구 관람 최적 온도! 랜더스 유니폼 한 장이면 딱. 저녁 경기라면 얇은 카디건도 OK",
+      text: "직관 최적 온도! 유니폼 한 장이면 딱. 저녁 경기엔 얇은 가디건 하나 걸치세요",
     };
   }
   if (temp < 25) {
     return {
       emoji: "😎🧢",
-      text: "따뜻해요! 반팔 유니폼 + 랜더스 모자 조합. 선크림 잊지 마세요",
+      text: "따뜻해요! 반팔 유니폼 + 볼캡 조합. 선크림 잊지 마세요. 에코백이면 짐 정리 편해요",
     };
   }
   if (temp < 30) {
     return {
       emoji: "🥵🧊",
-      text: "더워요! 시원한 반팔 유니폼 + 랜더스 썬캡 + 선크림 필수. 물 넉넉히 챙기세요",
+      text: "더워요! 통기성 좋은 반팔 유니폼 + 볼캡 + 선크림 필수. 물 넉넉히, 얇은 셔츠도 하나 챙기세요",
     };
   }
   return {
     emoji: "🫠💦",
-    text: "폭염 주의! 썬캡 + 선크림 + 휴대용 선풍기 + 물 필수. 열사병 조심하세요!",
+    text: "폭염 주의! 볼캡 + 선크림 + 휴대용 선풍기 + 물 필수. 그늘석 추천, 열사병 조심!",
   };
 }
 
@@ -210,7 +210,7 @@ export default function WeatherWidget() {
       <div className="mt-4 flex gap-6 text-sm text-text-dim">
         <div className="flex items-center gap-1.5">
           <span>💧</span>
-          <span>습도 <span className="text-text font-medium">{weather.humidity}%</span></span>
+          <span>강수 <span className="text-text font-medium">{weather.rainChance ?? "-"}%</span></span>
         </div>
         <div className="flex items-center gap-1.5">
           <span>🍃</span>
