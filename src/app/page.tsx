@@ -6,6 +6,7 @@ import TicketInfo from "@/components/TicketInfo";
 import MyBookings from "@/components/MyBookings";
 import WeatherWidget from "@/components/WeatherWidget";
 import ThemeToggle from "@/components/ThemeToggle";
+import TicketingGame from "@/components/TicketingGame";
 
 export default function Home() {
   return (
@@ -43,9 +44,12 @@ export default function Home() {
 
       {/* SECTION 2: 서버 시각 위젯 */}
       <section className="mb-10">
-        <h2 className="mb-4 font-display text-2xl text-text">
-          <span className="mr-2">⏱</span>서버 시각
-        </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-2xl text-text">
+            <span className="mr-2">⏱</span>서버 시각
+          </h2>
+          <TicketingGame />
+        </div>
         <ServerClockWidget />
       </section>
 
