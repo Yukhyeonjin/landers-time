@@ -9,11 +9,13 @@ export default function ServerClockWidget() {
   const [syncing, setSyncing] = useState(false);
   const [source, setSource] = useState<"ssg" | "local">("local");
   const [lastSync, setLastSync] = useState<number | null>(null);
+  const [latency, setLatency] = useState<number>(0);
 
   const doSync = useCallback(async () => {
     setSyncing(true);
     await Clock.sync();
     setSource(Clock.source);
+    setLatency(Clock.latencyMs);
     setLastSync(Clock.lastSyncAt);
     setSynced(true);
     setSyncing(false);
@@ -117,13 +119,34 @@ export default function ServerClockWidget() {
           </div>
 
           {/* Info */}
-          <div className="mt-5 space-y-1 text-sm text-text-dim">
-            <p>
-              마지막 동기화:{" "}
-              <span className="text-text">{timeSinceSync()}</span>
-            </p>
-            <p className="mt-2 text-xs text-text-muted">
-              ※ 네트워크 상태 및 사용자 PC 환경에 따라 실제 서버 시간과 최대 0.5초 내외의 오차가 발생할 수 있습니다.
+          <div className="mt-5 space-y-1.5 text-sm text-text-dim">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <p>
+                마지막 동기화:{" "}
+                <span className="text-text">{timeSinceSync()}</span>
+              </p>
+              {!isLocal && latency > 0 && (
+                <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface2 px-2.5 py-1">
+                  <span
+                    className={`inline-block h-2 w-2 rounded-full ${
+                      latency <= 100
+                        ? "bg-green-500"
+                        : latency <= 300
+                        ? "bg-yellow-500"
+                        : "bg-landers-red"
+                    }`}
+                  />
+                  <span className="text-xs font-mono text-text-dim">
+                    {latency}ms
+                  </span>
+                  <span className="text-[10px] text-text-muted">
+                    (±{Math.round(latency / 2)}ms 오차)
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-text-muted">
+              ※ 네트워크 왕복 시간(RTT)의 절반을 보정하여 서버 시각을 추정합니다.
             </p>
           </div>
         </>
