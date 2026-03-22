@@ -6,7 +6,7 @@ type Phase = "idle" | "captcha" | "grid" | "done";
 type Difficulty = 5 | 10;
 
 function generateCaptcha(len = 5): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ";
   let result = "";
   for (let i = 0; i < len; i++) {
     result += chars[Math.floor(Math.random() * chars.length)];

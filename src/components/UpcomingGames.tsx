@@ -37,7 +37,7 @@ function getPresaleOpenStr(gameDate: string, presaleDays: number): string {
 
 function isPresaleOpen(gameDate: string, presaleDays: number): boolean {
   const now = new Date();
-  const d = new Date(gameDate + "T11:00:00+09:00");
+  const d = new Date(gameDate + "T00:00:00+09:00");
   d.setDate(d.getDate() - presaleDays);
   return now >= d;
 }
