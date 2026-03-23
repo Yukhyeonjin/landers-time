@@ -40,14 +40,19 @@ function getToday() {
 }
 
 export default function ScheduleTable() {
-  const today = getToday();
-  const currentMonth = new Date().getMonth() + 1;
-  const defaultMonth = MONTHS.includes(currentMonth) ? currentMonth : 3;
-  const [activeMonth, setActiveMonth] = useState(defaultMonth);
+  const [today, setToday] = useState("9999-12-31");
+  const [activeMonth, setActiveMonth] = useState(3);
   const [view, setView] = useState<"list" | "calendar">("list");
   const [locationFilter, setLocationFilter] = useState<LocationFilter>("all");
   const [holidays, setHolidays] = useState<Record<string, string>>(HOLIDAYS_FALLBACK);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const t = getToday();
+    const m = new Date().getMonth() + 1;
+    setToday(t);
+    setActiveMonth(MONTHS.includes(m) ? m : 3);
+  }, []);
 
   const toggleBookmark = useCallback((dateKey: string) => {
     setBookmarks((prev) => {

@@ -61,12 +61,20 @@ export default function MyBookings() {
     };
   }, []);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const bookedGames = useMemo(() => {
-    const todayStr = new Date().toISOString().slice(0, 10);
+    if (!mounted) return [];
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     return schedule2026
       .filter((g: Game) => g.home && bookmarks.has(g.date) && g.date >= todayStr)
       .sort((a, b) => a.date.localeCompare(b.date));
-  }, [bookmarks]);
+  }, [bookmarks, mounted]);
 
   const presaleDays = PRESALE_DAYS[membership];
 

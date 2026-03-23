@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { schedule2026, type Game } from "@/data/schedule2026";
 
 const APP_STORE_URL = "https://apps.apple.com/kr/app/ssg-landers/id972556231";
@@ -68,12 +68,27 @@ function openApp() {
   }
 }
 
+function getKSTToday(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export default function UpcomingGames() {
   const [membership, setMembership] = useState<Membership>("landi_batty");
-
+  const [upcomingGames, setUpcomingGames] = useState<Game[]>([]);
   useEffect(() => {
     const saved = localStorage.getItem("membership");
     if (saved === "landi_batty" || saved === "poori" || saved === "general") setMembership(saved);
+
+    const todayStr = getKSTToday();
+    setUpcomingGames(
+      schedule2026
+        .filter((game: Game) => game.home && game.date >= todayStr)
+        .slice(0, 3)
+    );
   }, []);
 
   const handleMembership = (key: Membership) => {
@@ -83,14 +98,6 @@ export default function UpcomingGames() {
   };
 
   const selectedMembership = MEMBERSHIPS.find((m) => m.key === membership)!;
-
-  const upcomingGames = useMemo(() => {
-    const todayStr = new Date().toISOString().slice(0, 10);
-
-    return schedule2026
-      .filter((game: Game) => game.home && game.date >= todayStr)
-      .slice(0, 3);
-  }, []);
 
   return (
     <div>

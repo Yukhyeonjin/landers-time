@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 type Phase = "idle" | "captcha" | "grid" | "done";
 type Difficulty = 5 | 10;
@@ -89,6 +89,65 @@ function formatTime(ms: number): string {
   return `${min}분 ${remSec}.${String(millis).padStart(3, "0")}초`;
 }
 
+/** 타이머를 별도 컴포넌트로 분리 — 10ms 리렌더가 그리드에 전파되지 않도록 */
+function LiveTimer({ startTime, running }: { startTime: number; running: boolean }) {
+  const [elapsed, setElapsed] = useState(0);
+  const ref = useRef(elapsed);
+  ref.current = elapsed;
+
+  useEffect(() => {
+    if (!running || startTime === 0) return;
+    const id = setInterval(() => setElapsed(Date.now() - startTime), 10);
+    return () => clearInterval(id);
+  }, [running, startTime]);
+
+  return (
+    <div className="mb-4 text-center">
+      <span className="font-mono text-2xl font-bold text-landers-red tabular-nums">
+        {formatTime(elapsed)}
+      </span>
+    </div>
+  );
+}
+
+/** 그리드 셀을 memo로 감싸 불필요한 리렌더 방지 */
+const GridCell = memo(function GridCell({
+  num,
+  idx,
+  isHighlighted,
+  isClicked,
+  isWrong,
+  small,
+  onClick,
+}: {
+  num: number;
+  idx: number;
+  isHighlighted: boolean;
+  isClicked: boolean;
+  isWrong: boolean;
+  small: boolean;
+  onClick: (idx: number) => void;
+}) {
+  return (
+    <button
+      onClick={() => onClick(idx)}
+      disabled={isClicked}
+      className={`aspect-square rounded-md font-bold select-none touch-manipulation ${
+        isClicked
+          ? "bg-landers-red text-white scale-95"
+          : isWrong
+          ? "bg-red-200 text-red-700 animate-pulse"
+          : isHighlighted
+          ? "bg-landers-gold text-text ring-2 ring-landers-gold/50"
+          : "bg-surface2 text-text-dim active:bg-border"
+      } ${small ? "text-[10px]" : "text-sm"}`}
+      style={{ WebkitTapHighlightColor: "transparent" }}
+    >
+      {num}
+    </button>
+  );
+});
+
 export default function TicketingGame() {
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
@@ -100,11 +159,11 @@ export default function TicketingGame() {
   const [clicked, setClicked] = useState<Set<number>>(new Set());
   const [wrongClick, setWrongClick] = useState<number | null>(null);
   const [startTime, setStartTime] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [finalTime, setFinalTime] = useState(0);
   const [bestRecord, setBestRecord] = useState<Record<Difficulty, number | null>>({ 5: null, 10: null });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 최고 기록 로드
   useEffect(() => {
@@ -116,18 +175,6 @@ export default function TicketingGame() {
       });
     } catch { /* ignore */ }
   }, []);
-
-  // 타이머
-  useEffect(() => {
-    if (phase !== "idle" && phase !== "done" && startTime > 0) {
-      timerRef.current = setInterval(() => {
-        setElapsed(Date.now() - startTime);
-      }, 10);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [phase, startTime]);
 
   // 캡차 캔버스 그리기
   useEffect(() => {
@@ -144,9 +191,10 @@ export default function TicketingGame() {
     setCaptchaError(false);
     setClicked(new Set());
     setWrongClick(null);
-    setElapsed(0);
-    setPhase("captcha");
+    setFinalTime(0);
     setStartTime(Date.now());
+    setTimerRunning(true);
+    setPhase("captcha");
   }, []);
 
   const handleCaptchaSubmit = useCallback(() => {
@@ -179,16 +227,15 @@ export default function TicketingGame() {
   }, [clicked, grid.highlighted]);
 
   const handleBook = useCallback(() => {
-    const finalTime = Date.now() - startTime;
-    setElapsed(finalTime);
+    const elapsed = Date.now() - startTime;
+    setFinalTime(elapsed);
+    setTimerRunning(false);
     setPhase("done");
-    if (timerRef.current) clearInterval(timerRef.current);
 
     // 최고 기록 갱신
-    const key = String(difficulty) as "5" | "10";
     const prev = bestRecord[difficulty];
-    if (prev === null || finalTime < prev) {
-      const next = { ...bestRecord, [difficulty]: finalTime };
+    if (prev === null || elapsed < prev) {
+      const next = { ...bestRecord, [difficulty]: elapsed };
       setBestRecord(next);
       localStorage.setItem("ticketingBest", JSON.stringify({ "5": next[5], "10": next[10] }));
     }
@@ -197,7 +244,7 @@ export default function TicketingGame() {
   const closeModal = useCallback(() => {
     setOpen(false);
     setPhase("idle");
-    if (timerRef.current) clearInterval(timerRef.current);
+    setTimerRunning(false);
   }, []);
 
   const allFound = clicked.size === 4;
@@ -226,12 +273,8 @@ export default function TicketingGame() {
             </div>
 
             {/* 타이머 */}
-            {phase !== "idle" && (
-              <div className="mb-4 text-center">
-                <span className="font-mono text-2xl font-bold text-landers-red tabular-nums">
-                  {formatTime(elapsed)}
-                </span>
-              </div>
+            {phase !== "idle" && phase !== "done" && (
+              <LiveTimer startTime={startTime} running={timerRunning} />
             )}
 
             {/* IDLE: 시작 화면 */}
@@ -351,30 +394,18 @@ export default function TicketingGame() {
                     maxWidth: difficulty === 5 ? "280px" : "400px",
                   }}
                 >
-                  {grid.numbers.map((num, idx) => {
-                    const isHighlighted = grid.highlighted.has(idx);
-                    const isClicked = clicked.has(idx);
-                    const isWrong = wrongClick === idx;
-
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => handleGridClick(idx)}
-                        disabled={isClicked}
-                        className={`aspect-square rounded-md text-xs font-bold transition-all cursor-pointer ${
-                          isClicked
-                            ? "bg-landers-red text-white scale-95"
-                            : isWrong
-                            ? "bg-red-200 text-red-700 animate-pulse"
-                            : isHighlighted
-                            ? "bg-landers-gold text-text ring-2 ring-landers-gold/50"
-                            : "bg-surface2 text-text-dim hover:bg-border"
-                        } ${difficulty === 10 ? "text-[10px]" : "text-sm"}`}
-                      >
-                        {num}
-                      </button>
-                    );
-                  })}
+                  {grid.numbers.map((num, idx) => (
+                    <GridCell
+                      key={idx}
+                      num={num}
+                      idx={idx}
+                      isHighlighted={grid.highlighted.has(idx)}
+                      isClicked={clicked.has(idx)}
+                      isWrong={wrongClick === idx}
+                      small={difficulty === 10}
+                      onClick={handleGridClick}
+                    />
+                  ))}
                 </div>
 
                 {/* 예매 버튼 */}
@@ -398,9 +429,9 @@ export default function TicketingGame() {
                 <div className="rounded-2xl bg-landers-red-light border border-landers-red/20 p-6">
                   <p className="text-sm text-text-dim mb-1">예매 완료!</p>
                   <p className="font-mono text-3xl font-bold text-landers-red tabular-nums">
-                    {formatTime(elapsed)}
+                    {formatTime(finalTime)}
                   </p>
-                  {bestRecord[difficulty] !== null && elapsed <= bestRecord[difficulty]! && (
+                  {bestRecord[difficulty] !== null && finalTime <= bestRecord[difficulty]! && (
                     <p className="mt-2 text-sm font-semibold text-landers-gold">🏆 새 기록!</p>
                   )}
                 </div>
