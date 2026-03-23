@@ -7,6 +7,7 @@ import MyBookings from "@/components/MyBookings";
 import WeatherWidget from "@/components/WeatherWidget";
 import ThemeToggle from "@/components/ThemeToggle";
 import TicketingGame from "@/components/TicketingGame";
+import SeatGuide from "@/components/SeatGuide";
 
 export default function Home() {
   return (
@@ -87,7 +88,15 @@ export default function Home() {
         <ScheduleTable />
       </section>
 
-      {/* SECTION 5: 예매 안내 가이드 */}
+      {/* SECTION 5: 좌석 가이드 */}
+      <section className="mb-10">
+        <h2 className="mb-4 font-display text-2xl text-text">
+          <span className="mr-2">💺</span>좌석 가이드
+        </h2>
+        <SeatGuide />
+      </section>
+
+      {/* SECTION 6: 예매 안내 가이드 */}
       <section className="mb-10">
         <h2 className="mb-4 font-display text-2xl text-text">
           <span className="mr-2">📋</span>예매 안내
