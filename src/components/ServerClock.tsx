@@ -9,13 +9,13 @@ export default function ServerClockWidget() {
   const [syncing, setSyncing] = useState(false);
   const [source, setSource] = useState<"ssg" | "local">("local");
   const [lastSync, setLastSync] = useState<number | null>(null);
-  const [latency, setLatency] = useState<number>(0);
+  const [rtt, setRtt] = useState<number>(0);
 
   const doSync = useCallback(async () => {
     setSyncing(true);
     await Clock.sync();
     setSource(Clock.source);
-    setLatency(Clock.latencyMs);
+    setRtt(Clock.rttMs);
     setLastSync(Clock.lastSyncAt);
     setSynced(true);
     setSyncing(false);
@@ -125,22 +125,22 @@ export default function ServerClockWidget() {
                 마지막 동기화:{" "}
                 <span className="text-text">{timeSinceSync()}</span>
               </p>
-              {!isLocal && latency > 0 && (
+              {!isLocal && rtt > 0 && (
                 <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface2 px-2.5 py-1">
                   <span
                     className={`inline-block h-2 w-2 rounded-full ${
-                      latency <= 100
+                      rtt <= 100
                         ? "bg-green-500"
-                        : latency <= 300
+                        : rtt <= 300
                         ? "bg-yellow-500"
                         : "bg-landers-red"
                     }`}
                   />
                   <span className="text-xs font-mono text-text-dim">
-                    {latency}ms
+                    {rtt}ms
                   </span>
                   <span className="text-[10px] text-text-muted">
-                    (±{Math.round(latency / 2)}ms 오차)
+                    (±{Math.round(rtt / 2)}ms 오차)
                   </span>
                 </div>
               )}

@@ -13,9 +13,7 @@ export async function GET() {
     const networkLatency = localAfter - localBefore;
 
     const serverDate = res.headers.get("date");
-    const serverMs = serverDate
-      ? new Date(serverDate).getTime() + Math.round(networkLatency / 2)
-      : null;
+    const serverMs = serverDate ? new Date(serverDate).getTime() : null;
 
     return Response.json({
       serverMs,

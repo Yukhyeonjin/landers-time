@@ -376,7 +376,8 @@ export default function ScheduleTable() {
                     >
                       <span className="hidden sm:inline font-bold">{game.time}</span>
                       <br className="hidden sm:block" />
-                      vs {game.opponent}
+                      <span className="block sm:inline text-[10px] sm:text-xs leading-none">vs</span>
+                      {game.opponent}
                     </div>
                   )}
                   {game && !game.home && (
@@ -386,7 +387,8 @@ export default function ScheduleTable() {
                     >
                       <span className="hidden sm:inline font-bold">{game.time}</span>
                       <br className="hidden sm:block" />
-                      vs {game.opponent}
+                      <span className="block sm:inline text-[10px] sm:text-xs leading-none">vs</span>
+                      {game.opponent}
                     </div>
                   )}
                 </div>
