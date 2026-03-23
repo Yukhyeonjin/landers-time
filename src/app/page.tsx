@@ -9,9 +9,76 @@ import ThemeToggle from "@/components/ThemeToggle";
 import TicketingGame from "@/components/TicketingGame";
 import SeatGuide from "@/components/SeatGuide";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: "랜더스타임",
+      alternateName: ["LandersTime", "SSG 랜더스 타임"],
+      url: "https://landers-time.vercel.app",
+      description:
+        "SSG 랜더스 2026 경기 일정, 티켓 예매 서버 시각, 좌석 배치도, 멤버십 선예매 안내",
+    },
+    {
+      "@type": "SportsTeam",
+      name: "SSG 랜더스",
+      alternateName: "SSG Landers",
+      sport: "야구",
+      memberOf: {
+        "@type": "SportsOrganization",
+        name: "KBO 리그",
+      },
+      location: {
+        "@type": "StadiumOrArena",
+        name: "인천 SSG 랜더스필드",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "인천광역시",
+          addressRegion: "미추홀구",
+          addressCountry: "KR",
+        },
+      },
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "SSG 랜더스 티켓 예매는 어디서 하나요?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "ticket.ssg.com 또는 SSG 랜더스 앱에서 예매할 수 있습니다. 멤버십 등급에 따라 경기 5~7일 전 선예매가 가능합니다.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "SSG 랜더스필드 좌석 시야는 어떻게 확인하나요?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "랜더스타임에서 공식 좌석 배치도를 확대해서 확인하고, 자리어때(myseatcheck.com)에서 구역별 실제 시야 사진 9,765장을 무료로 볼 수 있습니다.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "SSG 랜더스 2026 멤버십 종류와 가격은?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "랜디(199,000원), 배티(99,000원), 푸리(50,000원), 일반(무료)이 있으며, 랜디·배티는 경기 7일 전, 푸리는 6일 전 선예매가 가능합니다.",
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* SECTION 1: 히어로 헤더 */}
       <header className="relative mb-10 overflow-hidden rounded-3xl bg-surface px-6 py-12 text-center md:py-16 border border-border">
         <div className="absolute top-4 right-4 z-10">

@@ -4,17 +4,24 @@ import "./globals.css";
 const SITE_URL = "https://landers-time.vercel.app";
 
 export const metadata: Metadata = {
-  title: "랜더스타임 — SSG 랜더스 홈경기 일정 & 티켓팅 서버 시각",
+  title: "랜더스타임 — SSG 랜더스 경기 일정·티켓 예매·좌석 가이드 2026",
   description:
-    "SSG 랜더스 2026 정규시즌 홈경기 일정 확인, ticket.ssg.com 서버 시각 실시간 표시, 빠른 예매 이동까지. 랜더스타임에서 예매 오픈 순간을 정확히 노리세요.",
-  keywords: ["SSG 랜더스", "티켓팅", "서버 시각", "예매", "홈경기 일정", "랜더스타임", "SSG랜더스필드", "인천 야구"],
+    "SSG 랜더스 2026 정규시즌 경기 일정, 티켓 예매 서버 시각 실시간 표시, 좌석 배치도·시야 사진, 멤버십 선예매 안내, 인천 랜더스필드 날씨까지. 예매 오픈 순간을 정확히 노리세요.",
+  keywords: [
+    "SSG 랜더스", "SSG 랜더스 예매", "SSG 랜더스 티켓", "SSG 랜더스 경기 일정",
+    "SSG 랜더스 좌석 추천", "SSG 랜더스 좌석 시야", "랜더스필드 좌석 배치도",
+    "SSG 랜더스 2026", "SSG 랜더스 티켓 가격", "SSG 랜더스 멤버십",
+    "인천 야구 티켓", "인천 야구장", "랜더스필드", "티켓팅 서버 시각",
+    "랜더스타임", "SSG 랜더스 일정표",
+  ],
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "랜더스타임 — SSG 랜더스 홈경기 일정 & 티켓팅",
-    description: "2026 SSG 랜더스 홈경기 일정, 멤버십 선예매 안내, 서버 시각 실시간 표시",
+    title: "랜더스타임 — SSG 랜더스 경기 일정·예매·좌석 가이드",
+    description:
+      "2026 SSG 랜더스 경기 일정, 티켓 예매 서버 시각, 좌석 배치도·시야 사진, 멤버십 선예매, 경기장 날씨 정보",
     url: SITE_URL,
     siteName: "랜더스타임",
     locale: "ko_KR",
@@ -22,8 +29,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "랜더스타임 — SSG 랜더스 홈경기 일정 & 티켓팅",
-    description: "2026 SSG 랜더스 홈경기 일정, 멤버십 선예매 안내, 서버 시각 실시간 표시",
+    title: "랜더스타임 — SSG 랜더스 경기 일정·예매·좌석 가이드",
+    description:
+      "2026 SSG 랜더스 경기 일정, 티켓 예매 서버 시각, 좌석 배치도·시야 사진, 멤버십 선예매 안내",
   },
   robots: {
     index: true,
