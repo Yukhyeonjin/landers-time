@@ -1,24 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { schedule2026, type Game } from "@/data/schedule2026";
+import { useSchedule, type ScheduleGame } from "@/lib/useSchedule";
+import { TEAM_COLORS } from "@/lib/teamMapping";
 
-const MONTHS = [3, 4, 5, 6, 7, 8, 9];
+const MONTHS = [3, 4, 5, 6, 7, 8, 9, 10];
 const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
 
 type LocationFilter = "all" | "home" | "away";
-
-const TEAM_COLORS: Record<string, string> = {
-  KIA: "#EA0029",
-  두산: "#131230",
-  NC: "#315288",
-  롯데: "#041E42",
-  한화: "#FF6600",
-  삼성: "#074CA1",
-  LG: "#C30452",
-  키움: "#570514",
-  KT: "#000000",
-};
+type Game = ScheduleGame;
 
 // API 실패 시 사용할 폴백 데이터
 const HOLIDAYS_FALLBACK: Record<string, string> = {
@@ -40,6 +30,7 @@ function getToday() {
 }
 
 export default function ScheduleTable() {
+  const { games: schedule, loading, error } = useSchedule();
   const [today, setToday] = useState("9999-12-31");
   const [activeMonth, setActiveMonth] = useState(3);
   const [view, setView] = useState<"list" | "calendar">("list");
@@ -92,19 +83,19 @@ export default function ScheduleTable() {
 
   // 목록용: 해당 월 + 필터
   const filtered = useMemo(() => {
-    return schedule2026.filter((g: Game) => {
+    return schedule.filter((g: Game) => {
       const month = parseInt(g.date.split("-")[1], 10);
       if (month !== activeMonth) return false;
       if (locationFilter === "home") return g.home;
       if (locationFilter === "away") return !g.home;
       return true;
     });
-  }, [activeMonth, locationFilter]);
+  }, [schedule, activeMonth, locationFilter]);
 
   // 달력용: 전체 경기 맵 (전후월 포함)
   const gameMap = useMemo(() => {
     const map: Record<string, Game> = {};
-    const games = schedule2026.filter((g: Game) => {
+    const games = schedule.filter((g: Game) => {
       if (locationFilter === "home") return g.home;
       if (locationFilter === "away") return !g.home;
       return true;
@@ -113,7 +104,7 @@ export default function ScheduleTable() {
       map[g.date] = g;
     }
     return map;
-  }, [locationFilter]);
+  }, [schedule, locationFilter]);
 
   const isPast = (date: string) => date < today;
   const isToday = (date: string) => date === today;
@@ -163,6 +154,18 @@ export default function ScheduleTable() {
 
   return (
     <div>
+      {/* 데이터 상태 */}
+      {error && (
+        <div className="mb-3 rounded-lg border border-landers-red bg-landers-red/10 px-3 py-2 text-xs text-landers-red">
+          ssglanders.com 일정 불러오기 실패: {error}
+        </div>
+      )}
+      {loading && schedule.length === 0 && (
+        <div className="mb-3 rounded-lg border border-border bg-surface2 px-3 py-2 text-xs text-text-dim">
+          ssglanders.com에서 경기 일정 불러오는 중…
+        </div>
+      )}
+
       {/* Month Tabs + Filters */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
@@ -248,7 +251,13 @@ export default function ScheduleTable() {
                       isToday(game.date)
                         ? "border-landers-gold ring-2 ring-landers-gold/40 bg-landers-gold-light"
                         : "border-border bg-surface"
-                    } ${isPast(game.date) ? "opacity-40" : ""} border-l-4`}
+                    } ${
+                      isPast(game.date)
+                        ? game.ended
+                          ? "opacity-75"
+                          : "opacity-40"
+                        : ""
+                    } border-l-4`}
                     style={{
                       borderLeftColor: game.home ? "#CE0E2D" : teamColor,
                     }}
@@ -268,10 +277,38 @@ export default function ScheduleTable() {
                       )}
                     </div>
 
-                    {/* 시간 */}
-                    <div className="font-mono text-base sm:text-lg font-semibold text-landers-red text-center">
-                      {game.time}
-                    </div>
+                    {/* 시간 또는 점수 */}
+                    {game.cancelled ? (
+                      <div className="text-center leading-tight">
+                        <div className="font-mono text-base sm:text-lg font-bold text-text-muted line-through">
+                          {game.time}
+                        </div>
+                        <div className="text-[11px] font-bold text-landers-red">
+                          취소
+                        </div>
+                      </div>
+                    ) : game.ended && game.hScore !== null && game.vScore !== null ? (
+                      <div className="text-center leading-tight">
+                        <div className="font-mono text-base sm:text-lg font-bold text-text">
+                          {game.hScore}<span className="text-text-muted">:</span>{game.vScore}
+                        </div>
+                        <div
+                          className={`text-[11px] font-bold ${
+                            game.result === "승"
+                              ? "text-landers-red"
+                              : game.result === "패"
+                              ? "text-blue-500"
+                              : "text-text-dim"
+                          }`}
+                        >
+                          {game.result ?? "종료"}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="font-mono text-base sm:text-lg font-semibold text-landers-red text-center">
+                        {game.time}
+                      </div>
+                    )}
 
                     {/* 상대팀 + 구장 */}
                     <div className="min-w-0">
@@ -369,28 +406,58 @@ export default function ScheduleTable() {
                       <span className="text-[11px] text-landers-gold leading-none">★</span>
                     )}
                   </div>
-                  {game && game.home && (
-                    <div
-                      className="mt-1 rounded-md bg-landers-red px-1.5 py-1 text-xs leading-snug text-white cursor-pointer"
-                      onClick={() => !isPast(cell.date) && toggleBookmark(cell.date)}
-                    >
-                      <span className="hidden sm:inline font-bold">{game.time}</span>
-                      <br className="hidden sm:block" />
-                      <span className="block sm:inline text-[10px] sm:text-xs leading-none">vs</span>
-                      {game.opponent}
-                    </div>
-                  )}
-                  {game && !game.home && (
-                    <div
-                      className="mt-1 rounded-md px-1.5 py-1 text-xs leading-snug text-white"
-                      style={{ backgroundColor: teamColor }}
-                    >
-                      <span className="hidden sm:inline font-bold">{game.time}</span>
-                      <br className="hidden sm:block" />
-                      <span className="block sm:inline text-[10px] sm:text-xs leading-none">vs</span>
-                      {game.opponent}
-                    </div>
-                  )}
+                  {game && (game.home || !game.home) && (() => {
+                    const showScore =
+                      game.ended &&
+                      !game.cancelled &&
+                      game.hScore !== null &&
+                      game.vScore !== null;
+                    const primary = game.cancelled
+                      ? "취소"
+                      : showScore
+                      ? `${game.hScore}:${game.vScore}`
+                      : game.time;
+                    return (
+                      <div
+                        className={`mt-1 rounded-md px-1.5 py-1 text-xs leading-snug text-white cursor-pointer ${
+                          game.cancelled ? "opacity-60" : ""
+                        }`}
+                        style={
+                          game.home
+                            ? { backgroundColor: "#CE0E2D" }
+                            : { backgroundColor: teamColor }
+                        }
+                        onClick={() =>
+                          game.home &&
+                          !isPast(cell.date) &&
+                          toggleBookmark(cell.date)
+                        }
+                      >
+                        <span
+                          className={`hidden sm:inline font-bold ${
+                            game.cancelled ? "line-through" : ""
+                          }`}
+                        >
+                          {primary}
+                        </span>
+                        <br className="hidden sm:block" />
+                        <span className="block sm:inline text-[10px] sm:text-xs leading-none">
+                          vs
+                        </span>
+                        {game.opponent}
+                        {game.cancelled && (
+                          <span className="ml-0.5 text-[10px] font-bold">
+                            (취소)
+                          </span>
+                        )}
+                        {showScore && game.result && (
+                          <span className="ml-0.5 font-bold">
+                            {game.result}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}

@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { schedule2026, type Game } from "@/data/schedule2026";
+import { useEffect, useMemo, useState } from "react";
+import { useSchedule, type ScheduleGame } from "@/lib/useSchedule";
+
+type Game = ScheduleGame;
 
 const APP_STORE_URL = "https://apps.apple.com/kr/app/ssg-landers/id972556231";
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.skt.ilbs.skwyverns.app&hl=ko";
@@ -77,19 +79,23 @@ function getKSTToday(): string {
 }
 
 export default function UpcomingGames() {
+  const { games: schedule, loading } = useSchedule();
   const [membership, setMembership] = useState<Membership>("landi_batty");
-  const [upcomingGames, setUpcomingGames] = useState<Game[]>([]);
+  const [todayStr, setTodayStr] = useState<string>("9999-12-31");
+
   useEffect(() => {
     const saved = localStorage.getItem("membership");
     if (saved === "landi_batty" || saved === "poori" || saved === "general") setMembership(saved);
-
-    const todayStr = getKSTToday();
-    setUpcomingGames(
-      schedule2026
-        .filter((game: Game) => game.home && game.date >= todayStr)
-        .slice(0, 3)
-    );
+    setTodayStr(getKSTToday());
   }, []);
+
+  const upcomingGames: Game[] = useMemo(
+    () =>
+      schedule
+        .filter((g: Game) => g.home && g.date >= todayStr)
+        .slice(0, 3),
+    [schedule, todayStr],
+  );
 
   const handleMembership = (key: Membership) => {
     setMembership(key);
@@ -119,7 +125,16 @@ export default function UpcomingGames() {
       </div>
 
       {/* 경기 카드 3개 */}
-      {upcomingGames.length === 0 ? (
+      {loading && upcomingGames.length === 0 ? (
+        <div className="grid gap-4 md:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-56 animate-pulse rounded-2xl border border-border bg-surface2"
+            />
+          ))}
+        </div>
+      ) : upcomingGames.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center">
           <p className="text-text-dim">남은 홈경기가 없습니다.</p>
         </div>

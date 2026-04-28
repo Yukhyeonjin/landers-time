@@ -17,6 +17,7 @@
   --font-display: "Pretendard Variable", "Pretendard", sans-serif;
   --font-body: "Pretendard Variable", "Pretendard", sans-serif;
   --font-mono: "Courier New", monospace;
+  --font-countdown: "Orbitron", "Pretendard Variable", "Pretendard", monospace;
 }
 
 /* Dark mode: override CSS custom properties under html.dark */

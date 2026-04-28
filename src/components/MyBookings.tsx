@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { schedule2026, type Game } from "@/data/schedule2026";
+import { useSchedule, type ScheduleGame } from "@/lib/useSchedule";
+
+type Game = ScheduleGame;
 
 type Membership = "landi_batty" | "poori" | "general";
 
@@ -36,6 +38,7 @@ function daysUntil(target: Date): number {
 }
 
 export default function MyBookings() {
+  const { games: schedule } = useSchedule();
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [membership, setMembership] = useState<Membership>("landi_batty");
 
@@ -71,10 +74,10 @@ export default function MyBookings() {
     if (!mounted) return [];
     const d = new Date();
     const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return schedule2026
+    return schedule
       .filter((g: Game) => g.home && bookmarks.has(g.date) && g.date >= todayStr)
       .sort((a, b) => a.date.localeCompare(b.date));
-  }, [bookmarks, mounted]);
+  }, [schedule, bookmarks, mounted]);
 
   const presaleDays = PRESALE_DAYS[membership];
 

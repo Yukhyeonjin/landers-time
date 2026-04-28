@@ -1,4 +1,5 @@
 import ServerClockWidget from "@/components/ServerClock";
+import TeamRank from "@/components/TeamRank";
 import TicketBanner from "@/components/TicketBanner";
 import ScheduleTable from "@/components/ScheduleTable";
 import UpcomingGames from "@/components/UpcomingGames";
@@ -127,6 +128,14 @@ export default function Home() {
           <span className="mr-2">🌤</span>문학경기장 날씨
         </h2>
         <WeatherWidget />
+      </section>
+
+      {/* SECTION 2.4: 팀 순위 */}
+      <section className="mb-10">
+        <h2 className="mb-4 font-display text-2xl text-text">
+          <span className="mr-2">🏆</span>KBO 팀 순위
+        </h2>
+        <TeamRank />
       </section>
 
       {/* SECTION 2.5: 나의 멤버십 */}
