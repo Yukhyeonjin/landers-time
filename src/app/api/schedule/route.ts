@@ -70,8 +70,8 @@ function transform(raw: SsgGame): ScheduleGame | null {
   if (!opponent || opponent === "SSG") return null;
   const stadium =
     STADIUM_SHORT_TO_FULL[raw.stadium] ?? raw.stadium ?? "";
-  const dateObj = new Date(raw.date + "T00:00:00+09:00");
-  const day = DAY_NAMES[dateObj.getDay()];
+  const [y, mo, d] = raw.date.split("-").map(Number);
+  const day = DAY_NAMES[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
   const ended = raw.end_Flag === "1";
   const cancelled = raw.cancel_Flag === 1;
   const result: ScheduleGame["result"] = cancelled
