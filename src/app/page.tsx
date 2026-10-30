@@ -9,6 +9,7 @@ import WeatherWidget from "@/components/WeatherWidget";
 import ThemeToggle from "@/components/ThemeToggle";
 import TicketingGame from "@/components/TicketingGame";
 import SeatGuide from "@/components/SeatGuide";
+import SeasonSummary from "@/components/SeasonSummary";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -110,6 +111,9 @@ export default function Home() {
           </p>
         </div>
       </header>
+
+      {/* 시즌 종료 시에만 노출 */}
+      <SeasonSummary />
 
       {/* SECTION 2: 서버 시각 위젯 */}
       <section className="mb-10">

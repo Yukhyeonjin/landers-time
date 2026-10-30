@@ -42,7 +42,8 @@ export default function ScheduleTable() {
     const t = getToday();
     const m = new Date().getMonth() + 1;
     setToday(t);
-    setActiveMonth(MONTHS.includes(m) ? m : 3);
+    // 시즌 종료 후(11월~)엔 마지막 달, 개막 전엔 첫 달
+    setActiveMonth(t > "2026-10-31" ? 10 : MONTHS.includes(m) ? m : 3);
   }, []);
 
   const toggleBookmark = useCallback((dateKey: string) => {
