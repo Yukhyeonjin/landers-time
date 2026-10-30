@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ServerClock as Clock } from "@/lib/serverTime";
+import ReactionTest, { reactionTitle } from "@/components/ReactionTest";
 
 const TICKET_OPEN_HOUR = 11;
 const SETTINGS_KEY = "landers-alarm-settings";
@@ -10,15 +11,42 @@ type AlarmSettings = {
   fiveMin: boolean;
   oneMin: boolean;
   tenSec: boolean;
+  // 반응속도만큼 오픈 알림을 앞당김 (ms)
+  leadMs: number;
 };
 
 const DEFAULT_SETTINGS: AlarmSettings = {
   fiveMin: true,
   oneMin: true,
   tenSec: false,
+  leadMs: 0,
 };
 
 type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
+
+function drawPip(canvas: HTMLCanvasElement, nowMs: number) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const d = new Date(nowMs);
+  const pad = (n: number, l = 2) => String(n).padStart(l, "0");
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.textBaseline = "middle";
+  ctx.font = "600 64px ui-monospace, monospace";
+  const hms = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const ms = `.${pad(d.getMilliseconds(), 3)}`;
+  const w = ctx.measureText(hms + ms).width;
+  const x = (canvas.width - w) / 2;
+  ctx.fillStyle = "#fff";
+  ctx.fillText(hms, x, 88);
+  ctx.fillStyle = "#CE0E2D";
+  ctx.fillText(ms, x + ctx.measureText(hms).width, 88);
+  ctx.font = "500 18px sans-serif";
+  ctx.fillStyle = "#999";
+  ctx.textAlign = "center";
+  ctx.fillText("ticket.ssg.com 서버 시각 · 랜더스타임", canvas.width / 2, 140);
+  ctx.textAlign = "start";
+}
 
 const computeNextOpen = (nowMs: number) => {
   const d = new Date(nowMs);
@@ -48,6 +76,45 @@ export default function ServerClockWidget() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const settingsBoxRef = useRef<HTMLDivElement | null>(null);
   const alertTimerRef = useRef<number | null>(null);
+  const pipCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [pipSupported, setPipSupported] = useState(false);
+
+  useEffect(() => {
+    setPipSupported(
+      !!document.pictureInPictureEnabled &&
+        "captureStream" in HTMLCanvasElement.prototype,
+    );
+  }, []);
+
+  const startPip = useCallback(async () => {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture().catch(() => {});
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = 480;
+    canvas.height = 170;
+    drawPip(canvas, Clock.now());
+    const video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
+    video.srcObject = canvas.captureStream();
+    try {
+      await video.play();
+      await video.requestPictureInPicture();
+      pipCanvasRef.current = canvas;
+      video.addEventListener(
+        "leavepictureinpicture",
+        () => {
+          pipCanvasRef.current = null;
+          video.srcObject = null;
+        },
+        { once: true },
+      );
+    } catch {
+      /* 브라우저가 PiP 거부 */
+    }
+  }, []);
 
   // load settings
   useEffect(() => {
@@ -190,6 +257,7 @@ export default function ServerClockWidget() {
     const tickInterval = setInterval(() => {
       const now = Clock.now();
       setTime(new Date(now));
+      if (pipCanvasRef.current) drawPip(pipCanvasRef.current, now);
 
       if (!target) return;
       const rem = target - now;
@@ -233,8 +301,8 @@ export default function ServerClockWidget() {
         }
       }
 
-      // 0초 도달
-      if (rem <= 0 && rem > -2000 && !triggeredRef.current.has("zero")) {
+      // 0초 도달 (반응속도 보정만큼 일찍)
+      if (rem <= settings.leadMs && rem > -2000 && !triggeredRef.current.has("zero")) {
         triggeredRef.current.add("zero");
         beep(1400, 0.5, 0.55);
         window.setTimeout(() => beep(1400, 0.5, 0.55), 600);
@@ -314,6 +382,21 @@ export default function ServerClockWidget() {
           : "border-border bg-surface"
       }`}
     >
+      {/* 11:00:00 이스터에그 */}
+      {target && synced && remaining <= 0 && remaining > -4000 && (
+        <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden="true">
+          {Array.from({ length: 24 }, (_, i) => (
+            <span
+              key={i}
+              className="animate-confetti absolute top-0 text-2xl"
+              style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 6) * 0.12}s` }}
+            >
+              {["⚾", "🎉", "🎫", "❤️"][i % 4]}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* 알림 플래시 배너 */}
       {activeAlert && (
         <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 animate-fade-in-down rounded-full bg-landers-red px-4 py-1.5 text-xs font-semibold text-white shadow-lg">
@@ -398,6 +481,27 @@ export default function ServerClockWidget() {
                   </label>
                 </div>
                 <div className="mt-3 border-t border-border pt-3">
+                  <p className="mb-1.5 text-xs font-semibold text-text">
+                    ⚡ 반응속도 보정{" "}
+                    <span className="font-normal text-text-muted">
+                      {settings.leadMs > 0
+                        ? `— 오픈 알림 ${settings.leadMs}ms 일찍 (${reactionTitle(settings.leadMs)})`
+                        : "— 꺼짐"}
+                    </span>
+                  </p>
+                  <ReactionTest
+                    onResult={(ms) => setSettings((s) => ({ ...s, leadMs: ms }))}
+                  />
+                  {settings.leadMs > 0 && (
+                    <button
+                      onClick={() => setSettings((s) => ({ ...s, leadMs: 0 }))}
+                      className="mt-1 text-[11px] text-text-muted underline"
+                    >
+                      보정 끄기
+                    </button>
+                  )}
+                </div>
+                <div className="mt-3 border-t border-border pt-3">
                   <button
                     onClick={() => {
                       ensureAudio();
@@ -418,6 +522,15 @@ export default function ServerClockWidget() {
               </>
             )}
           </div>
+          {pipSupported && (
+            <button
+              onClick={startPip}
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-dim transition-all hover:border-landers-red hover:text-landers-red"
+              title="다른 창 위에 서버 시계 띄우기"
+            >
+              📌<span className="hidden sm:inline"> 띄우기</span>
+            </button>
+          )}
           <button
             onClick={doSync}
             disabled={syncing}

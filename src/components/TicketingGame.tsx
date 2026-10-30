@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-type Phase = "idle" | "captcha" | "grid" | "done";
+type Phase = "idle" | "queue" | "captcha" | "grid" | "done";
 type Difficulty = 5 | 10;
 
 function generateCaptcha(len = 5): string {
@@ -87,6 +87,51 @@ function formatTime(ms: number): string {
   const min = Math.floor(sec / 60);
   const remSec = sec % 60;
   return `${min}분 ${remSec}.${String(millis).padStart(3, "0")}초`;
+}
+
+function speedTitle(ms: number, size: Difficulty): string {
+  const t = size === 10 ? ms / 1.5 : ms;
+  if (t < 4000) return "⚡ 광클의 신";
+  if (t < 6000) return "🐆 치타 예매러";
+  if (t < 9000) return "🐰 토끼 예매러";
+  return "🐢 거북이 예매러";
+}
+
+/** 대기열 연출 — 기록 시간에는 포함하지 않음 */
+function QueueScreen({ onDone }: { onDone: () => void }) {
+  const [start] = useState(() => 800 + Math.floor(Math.random() * 3200));
+  const [left, setLeft] = useState(start);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setLeft((n) => Math.max(0, n - Math.ceil(start / 25) - Math.floor(Math.random() * 40)));
+    }, 120);
+    return () => clearInterval(id);
+  }, [start]);
+
+  useEffect(() => {
+    if (left === 0) {
+      const t = setTimeout(onDone, 300);
+      return () => clearTimeout(t);
+    }
+  }, [left, onDone]);
+
+  return (
+    <div className="space-y-3 text-center">
+      <p className="text-sm font-semibold text-text">접속 대기 중입니다</p>
+      <p className="font-mono text-3xl font-bold tabular-nums text-landers-red">
+        {left.toLocaleString()}
+        <span className="ml-1 text-sm font-normal text-text-dim">명 앞</span>
+      </p>
+      <div className="h-2 overflow-hidden rounded-full bg-surface2">
+        <div
+          className="h-full rounded-full bg-landers-red transition-all"
+          style={{ width: `${((start - left) / start) * 100}%` }}
+        />
+      </div>
+      <p className="text-xs text-text-muted">새로고침하면 대기 순서가 뒤로 밀려요 🙅 (진짜로!)</p>
+    </div>
+  );
 }
 
 /** 타이머를 별도 컴포넌트로 분리 — 10ms 리렌더가 그리드에 전파되지 않도록 */
@@ -192,6 +237,11 @@ export default function TicketingGame() {
     setClicked(new Set());
     setWrongClick(null);
     setFinalTime(0);
+    setTimerRunning(false);
+    setPhase("queue");
+  }, []);
+
+  const enterCaptcha = useCallback(() => {
     setStartTime(Date.now());
     setTimerRunning(true);
     setPhase("captcha");
@@ -273,7 +323,7 @@ export default function TicketingGame() {
             </div>
 
             {/* 타이머 */}
-            {phase !== "idle" && phase !== "done" && (
+            {(phase === "captcha" || phase === "grid") && (
               <LiveTimer startTime={startTime} running={timerRunning} />
             )}
 
@@ -281,7 +331,7 @@ export default function TicketingGame() {
             {phase === "idle" && (
               <div className="text-center space-y-4">
                 <p className="text-sm text-text-dim">
-                  실제 티켓팅처럼 보안문자 입력 → 좌석 선택 → 예매를 최대한 빠르게!
+                  실제 티켓팅처럼 대기열 → 보안문자 입력 → 좌석 선택 → 예매를 최대한 빠르게!
                 </p>
 
                 {/* 난이도 선택 */}
@@ -315,6 +365,8 @@ export default function TicketingGame() {
                 </button>
               </div>
             )}
+
+            {phase === "queue" && <QueueScreen onDone={enterCaptcha} />}
 
             {/* CAPTCHA: 보안 문자 */}
             {phase === "captcha" && (
@@ -431,6 +483,7 @@ export default function TicketingGame() {
                   <p className="font-mono text-3xl font-bold text-landers-red tabular-nums">
                     {formatTime(finalTime)}
                   </p>
+                  <p className="mt-2 text-lg font-bold text-text">{speedTitle(finalTime, difficulty)}</p>
                   {bestRecord[difficulty] !== null && finalTime <= bestRecord[difficulty]! && (
                     <p className="mt-2 text-sm font-semibold text-landers-gold">🏆 새 기록!</p>
                   )}

@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useSchedule, type ScheduleGame } from "@/lib/useSchedule";
 import { TEAM_COLORS } from "@/lib/teamMapping";
 
-type Record_ = { w: number; d: number; l: number };
+// 2027 개막일 발표 시 "YYYY-MM-DD"로 채우기
+const OPENING_DAY: string | null = null;
+
+type Record_ ={ w: number; d: number; l: number };
 
 function tally(games: ScheduleGame[]): Record_ {
   const r = { w: 0, d: 0, l: 0 };
@@ -133,9 +136,20 @@ export default function SeasonSummary() {
           ))}
         </div>
 
-        <p className="mt-5 text-xs text-text-muted">
-          2027 시즌 일정이 발표되면 이곳에서 바로 확인할 수 있어요.
-        </p>
+        <div className="mt-5 rounded-xl bg-surface2 px-4 py-3 text-center text-sm text-text-dim">
+          {OPENING_DAY ? (
+            <>
+              ⚾ 2027 개막까지{" "}
+              <span className="font-bold text-landers-red">
+                D-{Math.max(0, Math.ceil((new Date(OPENING_DAY + "T00:00:00+09:00").getTime() - Date.now()) / 86_400_000))}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="inline-block animate-pulse">💤</span> 랜더스는 지금 겨울잠 중… 2027 개막일이 발표되면 D-day를 알려드릴게요
+            </>
+          )}
+        </div>
       </div>
     </section>
   );

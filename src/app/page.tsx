@@ -10,6 +10,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import TicketingGame from "@/components/TicketingGame";
 import SeatGuide from "@/components/SeatGuide";
 import SeasonSummary from "@/components/SeasonSummary";
+import MyAttendance from "@/components/MyAttendance";
+import PrepChecklist from "@/components/PrepChecklist";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -114,6 +116,7 @@ export default function Home() {
 
       {/* 시즌 종료 시에만 노출 */}
       <SeasonSummary />
+      <MyAttendance />
 
       {/* SECTION 2: 서버 시각 위젯 */}
       <section className="mb-10">
@@ -184,42 +187,7 @@ export default function Home() {
 
         <TicketInfo />
 
-        {/* 꿀팁 카드 */}
-        <div className="grid gap-4 sm:grid-cols-2 mt-10">
-          {[
-            {
-              icon: "⏱",
-              title: "서버 시각 활용",
-              text: "이 페이지 서버 시각 기준으로 오픈 순간 예매 사이트 접속",
-            },
-            {
-              icon: "📱",
-              title: "앱 사전 준비",
-              text: "SSG닷컴 앱 미리 설치 + 회원가입 + 결제수단 등록 필수",
-            },
-            {
-              icon: "🎟",
-              title: "멤버십 가입",
-              text: "인기 경기 확보를 위해 최소 배티 이상 가입 권장 (3월 말 마감)",
-            },
-            {
-              icon: "🔄",
-              title: "취소표 노리기",
-              text: "자정 0시 10분, 미결제 취소표 대량 방출 — 앱+PC 동시 접속",
-            },
-          ].map((tip) => (
-            <div
-              key={tip.icon}
-              className="rounded-xl border border-border bg-surface p-4"
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl">{tip.icon}</span>
-                <span className="font-semibold text-sm text-text">{tip.title}</span>
-              </div>
-              <p className="text-sm text-text-dim">{tip.text}</p>
-            </div>
-          ))}
-        </div>
+        <PrepChecklist />
       </section>
 
       {/* 푸터 */}
